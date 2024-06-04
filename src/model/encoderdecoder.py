@@ -3,14 +3,10 @@ from torch import Tensor, nn
 from functools import partial
 
 from src.model.components import (
-    ImgCnnBackbone,
-    ImgLinearBackbone,
-    ImgConvStemBackbone,
-    Encoder,
-    Decoder,
     PositionEmbedding,
     TokenEmbedding,
 )
+from src.model.gpt_fast_decoder import GPTFastDecoder
 
 
 class EncoderDecoder(nn.Module):
@@ -92,11 +88,22 @@ class EncoderDecoder(nn.Module):
         return memory
 
     def decode(
-        self, memory: Tensor, tgt: Tensor, tgt_mask: Tensor, tgt_padding_mask: Tensor
+        self,
+        memory: Tensor,
+        tgt: Tensor,
+        tgt_mask: Tensor,
+        tgt_padding_mask: Tensor,
     ) -> Tensor:
-        tgt_feature = self.pos_embed(self.token_embed(tgt))
-        tgt = self.decoder(tgt_feature, memory, tgt_mask, tgt_padding_mask)
-
+        if isinstance(self.decoder, GPTFastDecoder):
+            input_pos = torch.tensor(
+                [tgt.shape[1] - 1], device=tgt.device, dtype=torch.int
+            )
+            tgt = tgt[:, -1:]
+            tgt_feature = self.pos_embed(self.token_embed(tgt), input_pos=input_pos)
+            tgt = self.decoder(tgt_feature, memory, input_pos)
+        else:
+            tgt_feature = self.pos_embed(self.token_embed(tgt))
+            tgt = self.decoder(tgt_feature, memory, tgt_mask, tgt_padding_mask)
         return tgt
 
     def forward(

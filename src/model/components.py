@@ -3,7 +3,6 @@ import torch
 from torch import nn, Tensor
 from torchvision.ops.misc import Conv2dNormActivation
 
-
 __all__ = [
     "ImgCnnBackbone",
     "ImgLinearBackbone",
@@ -173,9 +172,13 @@ class PositionEmbedding(nn.Module):
         self.embedding = nn.Embedding(max_seq_len, d_model)
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor, input_pos: Optional[Tensor] = None) -> Tensor:
         # assume x is batch first
-        out = self.embedding(torch.arange(x.shape[1], device=x.device))
+        if input_pos is None:
+            _pos = torch.arange(x.shape[1], device=x.device)
+        else:
+            _pos = input_pos
+        out = self.embedding(_pos)
         return self.dropout(out + x)
 
 
