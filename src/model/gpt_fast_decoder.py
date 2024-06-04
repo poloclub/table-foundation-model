@@ -128,6 +128,10 @@ class GPTFastDecoder(nn.Module):
         self.max_seq_length = -1
 
     def setup_caches(self, max_batch_size, max_seq_length, dtype):
+        for b in self.layers:
+            b.multihead_attn.k_cache = None
+            b.multihead_attn.v_cache = None
+
         if (
             self.max_seq_length >= max_seq_length
             and self.max_batch_size >= max_batch_size
