@@ -90,12 +90,13 @@ class KVCache(nn.Module):
         # input_pos: [S], k_val: [B, H, S, D]
         assert input_pos.shape[0] == k_val.shape[2]
 
+        bs = k_val.shape[0]
         k_out = self.k_cache
         v_out = self.v_cache
-        k_out[:, :, input_pos] = k_val
-        v_out[:, :, input_pos] = v_val
+        k_out[:bs, :, input_pos] = k_val
+        v_out[:bs, :, input_pos] = v_val
 
-        return k_out, v_out
+        return k_out[:bs], v_out[:bs]
 
 
 class GPTFastDecoder(nn.Module):
