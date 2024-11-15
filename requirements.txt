@@ -1,7 +1,7 @@
-torch
-torchvision
-torchaudio
-torchtext
+torch==2.3.0
+torchvision==0.18.0
+torchaudio==2.3.0
+torchtext==0.18.0
 jsonlines
 beautifulsoup4
 matplotlib
